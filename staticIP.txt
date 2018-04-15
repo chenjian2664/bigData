@@ -1,0 +1,41 @@
+
+VMware下配置静态ip
+1.windows下查看ip ipconfig 
+	a.查看VMnet8虚拟网卡的地址 在什么网段下那么接下来配置的虚拟机
+		也要配置在同一网段下 例如查看为192.168.254.1
+	b.VMware下 编辑->虚拟网络编辑器->VMnet8网卡配置NAT模式 查看子网ip
+	以及点击NAT设置->查看网关->要将设置的ip与网关以及windows下查看的VMnet8
+	网卡地址都在同一网段，如果不是以windows下ip为标准进行设置
+	c.VMware下 虚拟机->硬件下的网络适配器->自定义->VMnet8（NAT模式）
+
+ubuntu 16.04 配置：
+	ifconfig 或者 ip addr 查看 网卡名称 一般为eth0 或者 ens33
+
+1.sudo vim /etc/network/interfaces
+	编辑为:
+		auto lo
+		iface lo inet loopback
+		
+		iface ens33 inet static
+		address 192.168.254.100
+		netmask 255.255.255.0
+		gateway 192.168.254.2
+		dns-nameserver 114.114.114.114
+		auto ens33
+	service network restart
+centos7 下 配置:
+	ifconfig 或者 ip addr 查看网卡名称 一般为ens33
+
+1.su
+2.vim /etc/sysconfig/network-scripts/ifcfg-ens33
+	主要编辑:
+		ONBOOT=yes
+		BOOTPROTO=static
+		NAME=ens33
+		IPADDR=192.168.254.xx
+		GATEWAY=192.168.254.2
+		NETMASK=255.255.255.0
+		DNS1=114.114.114.114
+	systemctl restart network
+
+		
