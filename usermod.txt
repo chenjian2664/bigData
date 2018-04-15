@@ -1,0 +1,6 @@
+
+使用 usermod 和 groupmod 修改当前用户名 (不是hostname，主机名)
+
+1. usermod -l 新名称 -md /home/新名称 旧名称
+
+2. groupmod -n 新民称 旧名称
