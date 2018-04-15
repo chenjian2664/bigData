@@ -1,0 +1,86 @@
+
+
+hadoop包含四个模块:
+	1.Hadoop Common:
+		支持其他模块的工具模块
+	2.HDFS:Hadoop Distributed File System:
+		分布式文件系统
+	  包含：
+	  	NameNode	//名称节点  	NN
+		DataNode	//数据节点	DN
+		SecondaryNamenode//辅助名称节点	2ndNN
+	3.Hadoop YARN:
+		yet another resource negotiate
+		作业与集群资源管理框架。
+		A framework for job scheduling and cluster resource management
+		包含：
+		ResourceManager	//资源管理器	RM
+		NodeManager	//节点管理器	NM
+	4.Hadoop MapReduce:
+		基于yarn系统的对于大数据集进行并行处理技术
+	 
+
+配置Hadoop：
+----------------
+	1.Standalone/local
+		独立模式
+	
+	2.Pseudodistributed mode
+		伪分布式
+	[配置过程]
+	a.core-site.xml
+		<?xml version="1.0" ?>
+		<configuration>
+			<property>
+				<name>fs.defaultFS</name>
+				<value>hdfs://localhost</value>
+			</property>
+		</configuration>
+	b.hdfs-site.xml
+		<?xml version="1.0" ?>
+		<configuration>
+			<property>
+				<name>dfs.replication</name>
+				<value>1</value>
+			</property>
+		</configuration>
+	c.mapred-site.xml
+		<?xml version="1.0" ?>
+		<configuration>
+			<property>
+				<name>mapreduce.framework.name</name>
+				<value>yarn</value>
+			</property>
+		</configuration>
+
+	d.yarn-site.xml
+		<?xml version="1.0" ?>
+		<configuration>
+			<property>
+				<name>yarn.resourcemanager.hostname</name>
+				<value>localhost</value>
+			</property>
+			<property>
+				<name>yarn.nodemanager.aux-services</name>
+				<value>mapreduce_shuffle</value>
+			</property>
+		</configuration>
+
+	[配置SSH无密码登录]
+	生成密钥对
+		a.ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+		b.cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+		若是对其他机器则将id_rsa.pub文件复制到目标机器的.ssh
+		文件夹下将本机的id_rsa.pub文件执行b操作即可
+		可以通过scp -r 或者 nc 命令
+	[启动/结束过程]
+		a.hadoop namenode -format
+		b.start-all.sh
+		c.stop-all.sh
+
+	[ubuntu下载源]
+		主要文件 /etc/apt/sources.list
+
+	3.Fully distributed mode
+		完全分布式
+
