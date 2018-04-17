@@ -77,9 +77,59 @@ rsync
 	[hdfs-default.xml]
 	hadoop-hdfs-2.7.5.jar/hdfs-default.xml
 	[yarn-default.xml]
-	hadoop-yarn-2.7.5.jar/yarn-default.xml
+	hadoop-yarn-common-2.7.5.jar/yarn-default.xml
 	[mapred-default.xml]
 	hadoop-mapreduce-client-core-2.7.5.jar/mapred-default.xml
-	
+
+启动hadoop时 应执行hadoop namenode -format 
+
+
+[关于执行java的一个问题]
+在s100上利用xcall执行各个机器上的命令时，执行linux系统自带命令时不会出错。
+但是执行有关java命令时会出现command not find错误提示。
+例如:xcall jps 、xcall java -version会出错
+原因：利用ssh s101 jps 执行该条命令时 ssh不会加载机器上的/etc/profile文件
+而应该在/etc/environment 中修改 即：
+将JAVA_HOME、PATH等写在该文件中。
+
+[关于centos7]
+在启动了所有节点后 利用服务器可以查看集群信息 s100：50070namenode
+s101-s103 50075 datanode 
+s104 secondarynamenode 
+centos7下要关闭防火墙 systemctl stop firewalld
+
+
+考察本地文件内容
+1.s100:/tmp/hadoop-chenjian/dfs/name/current/VERSION
+	#Mon Apr 16 20:39:58 PDT 2018
+	namespaceID=793078229
+	clusterID=CID-39ca8d42-655b-4477-ba09-a53b80ae5afd
+	cTime=0
+	storageType=NAME_NODE                     //表明s100是namenode
+	blockpoolID=BP-1161919343-192.168.254.100-1523936397966
+	layoutVersion=-63
+2.同理进入s101 查看/tmp/hadoop-chenjian/name/current/VERSION文件
+	可以看出s101是datanode
+	s102/s103也是datanode
+
+
+修改本地的hadoop临时目录
+1.修改hadoop.tmp.dir
+	[core-site.xml]
+	hadoop.tmp.dir=/home/chenjian/hadoop
+	<property>
+		<name>hadoop.tmp.dir</name>
+		<value>/home/chenjian/hadoop</value>
+	</property>
+2.分发core-site.xml
+
+3.stop-all.sh
+4.格式化
+	hadoop namenode -format
+5.xcall mkdir /home/chenjian/hadoop 为每个节点创建hadoop存储目录
+6.start-all.sh
+在这些步骤之后 以后启动hadoop时候就不需要再次格式化hadoop了
+
+
 
 
