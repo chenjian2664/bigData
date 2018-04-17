@@ -1,0 +1,51 @@
+
+
+Hadoop脚本分析
+---------------------
+	1.start-all.sh
+	hadoop的按住目录下:
+	libexec/hadoop-config.sh //设置变量
+	sbin/start-dfs.sh --config $HADOOP_CONF_DIR //启动hdfs
+	sbin/start-yarn.sh --config $HADOOP_CONF_DIR //启动yarn
+
+	2.libexec/hadoop-config.sh			//设置变量
+		COMMON_DIR
+		...
+		HADOOP_CONFIG_DIR=...
+		HEAD_SIZE=1000m
+		CLASSPATH=...
+
+	3.sbin/start-dfs.sh --config $HADOOP_CONF_DIR
+		1.libexec/hdfs-config.sh
+			#获得名称节点主机名
+		2.NAMENODES=hdfs getconf -namenodes
+		3.启动名称节点
+		"$HADOOP_PREFIX/sbin/hadoop-daemons.sh" \
+			--config "$HADOOP_CONF_DIR" \
+			--hostnames "NAMENODES" \
+			--script "$bin/hdfs" start namenode $nameStartOpt
+		4.启动数据节点
+		"$HADOOP_PREFIX/sbin/hadoop-daemons.sh" \
+			--config "$HADOOP_CONF_DIR" \
+			--script "$bin/hdfs" start datanode $dataStartOpt
+		5.启动2nn
+		"$HADOOP_PREFIX/sbin/hadoop-daemons.sh" \
+			--config "$HADOOP_CONF_DIR" \
+			--hostnames "$SECONDARY_NAMENODES" \
+			--script "$bin/hdfs" start secondarynamenode
+
+	4.libexec/hdfs-config.sh
+		内部调用hadoop-config.sh
+		也就是第一步都是设置变量
+
+	5.sbin/hadoop-daemons.sh	//启动守护进程
+		1.libexec/hdfs-config.sh  //执行配置脚本
+		2.exec "$bin/salves.sh" --config $HADOOP_CONF_DIR cd "$HADOOP_PREFIX" \; "$bin/hadoop-daemon.sh" --config $HADOOP_CONF_DIR "$@"
+		3.循环利用ssh登录远程主机执行相应命令
+
+		关于 $bin/hadoop-daemon.sh脚本
+			会调用hadoop-config.sh 配置变量
+			会执行[bin/hdfs]命令
+			bin/hdfs 最终利用java命令 
+
+
