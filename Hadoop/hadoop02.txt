@@ -68,6 +68,18 @@ rsync
 	done
 
 
-
+整理hadoop的所有类库
+1.解压缩hadoop-2.7.5.tar.gz到目录下
+2.整理jar包 将source.jar test.jar 以及所有jar包整理出来
+3.抽取所有配置文件
+	[core-default.xml]
+	hadoop-common-2.7.5.jar/core-default.xml
+	[hdfs-default.xml]
+	hadoop-hdfs-2.7.5.jar/hdfs-default.xml
+	[yarn-default.xml]
+	hadoop-yarn-2.7.5.jar/yarn-default.xml
+	[mapred-default.xml]
+	hadoop-mapreduce-client-core-2.7.5.jar/mapred-default.xml
+	
 
 
