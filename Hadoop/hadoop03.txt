@@ -47,5 +47,52 @@ Hadoop脚本分析
 			会调用hadoop-config.sh 配置变量
 			会执行[bin/hdfs]命令
 			bin/hdfs 最终利用java命令 
+	
 
+	6.bin/hadoop 
+		hadoop-config.sh
+		java ...
+	7.bin/hdfs
+		hadoop-config.sh
+		java ...
+	
+常用命令
+----------------
+	1.格式化系统
+		hadoop namenode -format
+	2.hadoop fs == hdfs dfs
+	3.hdfs dfs -put == hdfs dfs -copyFromLocal
+	4.hdfs dfs -get == hdfs dfs -copyToLocal
+	5.剪切 hdfs dfs -moveToLocal // hdfs dfs -moveFromLocal
+
+hadoop配置信息
+-----------------
+[hdfs-site.xml]
+dfs.namenode.name.dir
+namenode的本地目录配置成多个，则每个目录存放内容相同，可靠
+
+dfs.datanode.data.dir
+决定本地文件系统中数据中块数据存在哪里，如果存储类型没有设置会默认存在磁盘上面。
+datanode的本地目录配置成多个，不是副本是存储的位置。
+
+
+hadoop hdfs块大小定义为128M
+----------------------------
+磁盘寻道时间=10ms 
+磁盘IO速率：100Ms
+
+
+!!!hadoop中报有关native的错误 一般都与hadoop的版本有关，所有安装hadoop最好保证版本一致，安装完整。
+windows编程连接linux服务器有出先winutils.exe缺失的异常，是hadoop/bin目录下没有winutis.exe和hadoop.dll所致，下载版本一致的windowhadoop 配置HADOOP_HOME和path=$HADOOP_HOME下的bin目录
+
+
+[vim 和 shell的一些快捷键]
+vim : e shift+e 下一个单词跳跃 shift大跳 b shift+b 会跳上一个单词
+5gg 8gg 分别跳到5和8行
+^跳至行首$跳到行尾
+w跳到下一个字首
+shell:ctrl+a 命令首 ctrl+e命令尾 alt+箭头一个单词一个单词跳跃
+ctrl+r 搜索使用过的最近的命令
+
+查询集群
 
