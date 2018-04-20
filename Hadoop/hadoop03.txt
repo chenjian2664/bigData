@@ -96,3 +96,110 @@ ctrl+r 搜索使用过的最近的命令
 
 查询集群
 
+
+package com.chenjian.hdfs.test;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.*;
+import java.lang.reflect.Method;
+
+
+/**
+ * 使用hadoop实现文件操作
+ */
+public class TestFileSystem {
+    private FileSystem fileSystem;
+    @Before
+    public void initConf() {
+       Configuration configuration = new Configuration();
+        try {
+            fileSystem = FileSystem.get(configuration);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    @Test
+    public void writeFile() throws Exception {
+        Path path = new Path("hdfs://s100:8020/user/test.txt");
+        //数据输出流
+        FSDataOutputStream fsDataOutputStream = fileSystem.create(path);
+        fsDataOutputStream.write("helloworld".getBytes());
+        fsDataOutputStream.close();
+        System.out.println("over");
+    }
+
+    @Test
+    public void readFile() throws IOException {
+        Path path = new Path("hdfs://s100:8020/user/chenjian/data/hello.txt");
+        //数据输入流
+        FSDataInputStream fsDataInputStream = fileSystem.open(path);
+        byte[] buf = new byte[1024];
+        int len = fsDataInputStream.read(buf);
+        FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Administrator\\Desktop\\read.txt");
+
+        fileOutputStream.write(buf, 0, len);
+        System.out.println("over");
+    }
+
+    /**
+     * 利用hadoop API 进行读取数据
+     */
+    @Test
+    public void readFileInHadoopAPI() throws IOException {
+        Path path = new Path("hdfs://s100:8020/user/chenjian/data/hello.txt");
+        //数据输入流
+        FSDataInputStream fsDataInputStream = fileSystem.open(path);
+        FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Administrator\\Desktop\\read.txt");
+        IOUtils.copyBytes(fsDataInputStream, fileOutputStream, 1024);
+
+        System.out.println("over");
+    }
+    /**
+     * 利用Hadoop API写数据
+     */
+    @Test
+    public void writeFileInHadoopAPI() throws Exception {
+        InputStream inputStream = new FileInputStream("C:\\Users\\Administrator\\Desktop\\read.txt");
+        FSDataOutputStream fsDataOutputStream = fileSystem.create(new Path("hdfs://s100:8020/user/read.txt"),(short)3);
+        IOUtils.copyBytes(inputStream,fsDataOutputStream,1024);
+        System.out.println("over");
+    }
+
+    /**
+     * mkdirs method 使用
+     */
+    @Test
+    public void mkdirTest() throws IOException {
+
+        boolean b = fileSystem.mkdirs(new Path("/user/directoryTest"), FsPermission.getDefault());
+        System.out.println(b);
+    }
+    /**
+     * 遍历根目录
+     * 调用FileStatus所有无参数的函数
+     */
+    @Test
+    public void fileStatus() throws Exception {
+        FileStatus fileStatus = fileSystem.getFileStatus(new Path("/"));
+        Class cls = FileStatus.class;
+        Method[] methods = cls.getDeclaredMethods();
+
+        for (Method method : methods) {
+            String mname = method.getName();
+            Class<?>[] cs = method.getParameterTypes();
+            //无参函数
+            if (mname.startsWith("get") && (cs == null || cs.length == 0)) {
+                //getSymlink函数无法调用
+                if (!mname.equals("getSymlink")) {
+                    System.out.println(mname + "() = " + method.invoke(fileStatus, null));
+                }
+            }
+        }
+    }
+}
