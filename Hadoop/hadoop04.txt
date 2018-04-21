@@ -1,0 +1,69 @@
+
+使用hadoop hdfs API访问文件系统
+----------------------------------
+	1.Configuration
+		配置对象，加载配置文件
+		addDefaultResource();从classpath加载
+	2.FileSystem
+		DisttributedFileSystem,是FileSystem的一个实现，用于hadoop和hdfs进行交互
+
+	3.Paath
+		文件或者目录的名称。/是路径分隔符，有绝对路径和相对路径之分，与linux系统目录性质一样
+	
+	4.
+
+block
+------------
+	128M
+	磁盘IO速率100M/s
+	让磁盘寻道时间占10ms数据传输的1%。
+	
+多目录结构
+---------------
+	1.namenode 副本概念
+	2.datanode 不是副本
+
+
+
+
+网络拓扑
+--------------
+ 节点距离：两个节点到达最近的公共的祖先的跃点(经过交换机的次数)数。
+ 同一机架同一主机不同进程之间距离是0
+ 同一机架不同主机之间不同进程之间距离是2
+ 不同机架不同主机进程之间距离是4
+ 不同数据中心不同主机之间距离是6
+
+
+ 副本节点的选择（机架感知）：
+ --------------------
+ 	1.默认
+		第一个副本在client所处的节点上。如果客户端在集群外随机挑选一个
+		第二个副本和第一副本在不同机架随机选择一个节点
+		第三个副本和第二个节点相同机架随机节点
+	hadoop2.7.2 第一和第二副本在一个机架第三副本在另外机架
+
+
+自定义机架感知
+------------------------
+	1.创建类实现DNSToSwitchMapping接口
+	2.配置文件core-site.xml文件
+		[core-site.xml]
+		修改配置
+		<property>
+			<name>net.topology.node.switch.mapping.impl</name>
+			<value>org.apache.hadoop.net.ScriptBaseMapping</value>
+	3.分发core-site.xml
+	4.编译程序，打称jar，分发所有几点的hadoop的classpath下		/usr/local/hadoop-2.7.5/hadoop/shared/common/lib
+	5.分发
+
+
+
+
+
+
+
+
+
+
+
