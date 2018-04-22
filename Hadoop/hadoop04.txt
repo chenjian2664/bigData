@@ -60,10 +60,20 @@ block
 
 
 
+hdfs架构
+----------------
+	运行于廉价的硬件之上，成本低，访问大型数据集，具有很好的容错机制。
+	hdfs是master/slaves架构，由一个名称节点以及多个数据节点构成。namenode负责namespace存储(路径)以及client的访问。
+
+
+namenode
+-------------
+	存放元数据
 
 
 
-
-
-
+使用oie和oev查看namenode的镜像文件和编辑日志
+------------------------------------------
+	hdfs oiv -p XML -i xxx -o xxxx //fsimage
+	hdfs oev -p XML -i xxx -o xxxx	//edit log
 
