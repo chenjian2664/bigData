@@ -1,0 +1,145 @@
+
+hadoop IO
+-----------------
+	1.客户端命令
+	2.FileSystem
+		文件系统，DistributedFileSystem。
+	
+	3.FSDataInputStream
+		FSDataInputStream fis = FileSystem.open();
+
+	4.FSDataOutputStream
+		FSDataOutputStream fous = FileSystem.create(path);
+	
+namenode
+-------------
+	2.存放元数据(名称，副本数，块大小，权限)
+
+
+
+查看namenode的镜像文件
+------------------------
+	离线查看namenode镜像文件
+	hdfs oiv -p XML -i xxx -o xxxx  //fsimage
+	离线查看编辑日志文件
+	hdfs oev -p XML -i xxx -o xxxx	//edits log
+
+
+hadoop集群启动首先进入安全模式
+------------------------------
+	如果集群处于安全模式，不能执行一些重要操作，比如写操作
+	集群启动完成后，自动推出安全模式
+	1.安全模式的操作
+		 hdfs hdfsadmin -safemode [get enter leave wait]
+			分别：得到安全模式状态
+				  进入安全模式
+				  离开安全模式
+				  等待 
+	
+
+保存名字空间/融合镜像和编辑日志
+------------------------------
+	1.进入安全模式
+		hdfs dfsadmin -safemode enter
+	2.进行保存
+		hdfs dfsadmin -saveNamespace
+	3.推出安全模式
+		hdfs dfsadmin -safemode leave
+
+	
+一致性模型
+------------------
+	读写是否立即可见。
+	写入数据时，如果希望数据被其他client立即可见，调用如下方法:
+	FSDataOutputStream.hflush(); //清理客户段缓冲区数据，被其他client立即可见。
+	FSDataOutputStream.sync();
+	FSDataOutputStream.hsync(); //清理客户端缓冲区数据，并写数据进入磁盘.
+
+
+
+
+distcp
+-------------
+	实现两个hadoop集群之间的递归数据复制。
+	hadoop distcp hdfs://s100:8020/user/chenjian/hello.txt hdfs://s103:8020/user/chenjian/how.txt
+
+
+归档文件
+--------------
+	[归档文件]
+	archive    //归档
+	每个文件都按照块的方式存储，每个块的元数据存在namenode的内存当中，因此hadoop存储小文件会非常低效，大量的小文件会耗尽namenode中的大量内存。 块的大小128M是一个逻辑值，并不是说一个文件只有几个字节或者很小也会分配给它128M磁盘空间，有多大就给多大磁盘空间，但是不能超过128M
+	
+	hadoop archive -archiveName myhar.har -p /user/chenjian/data /user/
+	将/user/chenjian/data 下的所有文件归档称myhar.har文件夹中并放在/user目录下
+
+
+	[查看归档]
+	hdfs dfs -ls -R har:///user/myhar.har
+	[解归档]
+	hdfs dfs -cp har:///user/myhar.har /user/chenjian/
+
+
+
+数据完整性
+--------------------
+	1.一般性校验没有纠错机制
+	2.由io.bytes.per.checksum指定每多少字节开始校验一次,该项数据的值不能大于io.file.buffer.size
+	3.数据写入hdfs的datanode管道时，最后一个datanode负责校验
+	4.datanode在后台开启守护线程-DataBlockScanner
+
+LocalFileSystem
+-------------------
+	Configration conf = new ...
+	conf.set("fs.defaultFS", "file:///");
+	FileSystem fs = FileSystem.get(conf); //scheme: file | hdfs | ...
+	
+	
+
+codec
+--------------
+	编码
+
+decodec
+--------------
+	解码
+
+
+hadoop的native类库如果找不到 就将hadoop/lib/native/* 放到/lib下
+
+/**
+ *	利用CompressionOutputStream压缩文件以.deflate结尾
+ *	装饰模式
+ */
+public void testCompressInDeflate() throws Exception {
+	String codecClassname = "org.apache.hadoop.io.compress.DefaultCode";
+	Class<?> codeClass = Class.forName(codeClassname);
+	Configuration conf = new Configuration();
+	CompressionCodec codec = (CompressionCodec)ReflectionUtils.newInstance(codecClass, conf);
+	FileInputstream fis = new FileInputStream("/home/chenjian/codec/hadoop.pdf");
+	FileOutputStream fos = new FileOutputStream("/home/chenjian/codec/hadoop.deflate");
+	CompressionOutputStream out = codec.crateOutputStream(fos);
+	IOUtils.copyBytes(fis, out, 4096, false);
+
+	out.close();
+	fos.close();
+	fis.close();
+	System.out.println("over!");
+}
+
+
+
+/**
+ *	解压 装饰模式 DeflateCodec CompressionInputStream使用
+ */
+public void deCompressFileInDeflate() throws Exception {
+	Configuration conf = new Configuration();
+	Class<DefalteCodec> codecClass = DeflateCodec.class;
+	DeflateCodec codec = ReflectionUtils.newInstance(codecClass, conf);
+	CompressionInputStream cis = codec.createInputStream(new FileInputStream("/home/chenjian/codec/hadoop.deflate");
+	FileOutputStream fos = new FileOutputStream("/home/chenjian/codec/new_hadoop.pdf");
+	IOUtils.copyBytes(cis, fos, 1024);
+	fos.close();
+	cis.close();
+	System.out.println("over!");
+}
