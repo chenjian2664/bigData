@@ -1,0 +1,55 @@
+
+codec
+---------------------
+	1.deflate	.deflate
+	2.gzip		.gz
+	3.bzip2		.bz2
+	4.lzo		.lzo
+	5.lz4		.lz4
+	6.snappy	.snappy
+
+使用hadoop的checknative命令检查本地库安装情况
+--------------------------------------------
+	命令hadoop checknative -a查看本地类库情况
+
+
+安装lzo-2.10
+------------------
+	1.下载并tar -zxvf lzo-2.10.tar.gz
+	2.编译安装lzo库
+		./configure --enable-shared 
+		make 
+		make install
+	3.检查是否生成lzo库文件
+		find /usr/local/lib | grep lzo
+
+编译hadoop-lzo-master项目
+-----------------------
+	1.下载并解压hadoop-lzo-master.zip
+	2.需要jdk1.6以上
+	3.安装lzo-2.x的库
+	4.编译hadoop-lzo
+		C_INCLUDE_PATH=/usr/local/include //设置头文件目录
+		LIBRARY_PATH=/usr/local/lib //设置lzo的库文件
+		mvn clean test
+
+	5.
+
+
+
+安装maven
+-------------------
+	1.tar -zxvf apache-maven-3.3.9.tar.gz
+	2.在/etc/environment 中 M2_HOME=... PATH=${M2_HOME}/bin
+
+
+在win7宿主机上搭建maven本地仓库服务器
+-----------------------------------
+	1.安装tomcat
+
+	2.安装nexus.war文件
+		a.复制nexus.war到${tomcat_home}/webapps/
+		b.启动tomcat
+		c.http://localhost:8080/nexus/
+
+	
