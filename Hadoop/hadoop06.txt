@@ -33,7 +33,10 @@ codec
 		LIBRARY_PATH=/usr/local/lib //设置lzo的库文件
 		mvn clean test
 
-	5.
+	5.mvn clean package 会在hadoop-lzo-master/target目录下出现
+		hadoop-lzo-0.4.21-SNAPSHOT.jar文件
+	6.将hadoop-lzo-0.4.12-SNAPSHOT.jar复制到eclipse或者idea目录下加入到构建
+	目录下
 
 
 
@@ -52,4 +55,71 @@ codec
 		b.启动tomcat
 		c.http://localhost:8080/nexus/
 
-	
+	3.配置maven的settings.xml文件,连接到本地
+		maven/conf 下 settings.xmlven/conf 下 settings.xml	
+
+maven本地仓库服务器的配置
+-----------------------
+	1.编辑tomcat/webapps/nexus/WEB-INF/classes/nexus.properties
+		nexus-work=h:/maven-repo/nexus      //一定要大一点的磁盘
+		runtime=${bundleBasedir}
+		nexus-app=${runtime}
+
+
+hadoop压缩与解压缩六个算法
+---------------------------
+	DeflateCodec GzipCodec	Bzip2Codec	LzoCodec	Lz4Codec	SnappyCodec
+空间效能:Bzip2 > deflate > Gzip > lzo > lz4 > snappy
+压缩时间:lz4 > snappy > lzo > gzip > deflate > bzip2
+解压时间：lzo > gzip > lz4 > snappy > deflate > bzip2
+
+使用CodecPool池化技术
+-----------------------
+public class TestCodecPool {
+	//compression 压缩
+	public static void main(String[] args) throws Exception {
+		Configuration conf = new Configuration();
+		Class codecClass = DeflateCodec.class;
+
+		CompressionCodec codec = (CompressionCodec)ReflectionUtils.newInstance(codecClass, conf);
+
+		Compressor comp = CodecPool.getCompressor(codec);
+
+		CompressionOutputStream cos = codec.createOutputStream(new FileOutputStream("/home/chenjian/codec/b.deflate"), comp);
+		IOUtils.copyBytes(new FileInputStream("/home/chenjian/a.txt"), cos, 1024);
+		cos.close();
+		//return compressor into codecPool
+		CodecPool.returnCompressor(comp);
+
+		System.out.println("over!");
+	}
+}
+
+public class TestCodecPool {
+	//decompression 解压
+	public static void main(String[] args) throws Exception {
+		Configuration conf = new Configuration();
+		Class codecClass = DeflateCodec.class;
+
+		CompressionCodec codec = (CompressionCodec)ReflectionUtils.newInstance(codecClass, conf);
+
+		Decompressor dcomp = CodecPool.getDecompressor(codec);
+
+		CompressionInputStream cis = codec.createInputStream(new FileInputStream("/home/chenjian/codec/b.deflate"), dcomp);
+		IOUtils.copyBytes(cis, new FileOutputStream("/home/chenjian/c.txt", 1024);
+		cos.close();
+		//return compressor into codecPool
+		
+		CodecPool.returnCompressor(comp);
+
+		System.out.println("over!");
+	}
+}
+
+
+maven基础
+-------------------
+	1.pom 
+		project object model ，项目对象模型
+	2.mvn help:system
+	输出环境变量，下载help插件到本地仓库中
