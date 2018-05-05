@@ -1,0 +1,190 @@
+
+maven
+--------------
+	管理项目的工具
+	pom project object model,项目对象模型
+
+mvn clean		//删除target目录
+mvn test		//测试
+mvn compile		//编译
+mvn package		//打包
+mvn install		//安装
+
+mvn archetype:generate //生成maven骨架
+
+
+maven依赖项的范围(scope)
+	1.compile
+		默认值。编译、测试、运行都有效
+	2.test
+		只针对测试阶段
+	3.provided
+		编译和测试有效，运行无效
+	4.runtime
+		测试和运行有效，编译无效
+
+idea中maven
+-----------------
+	File--->setting中Build...中的maven配置，。。
+	搜索hadoop maven 中寻找hadoop-common  hadoop-hdfs等xml文件加入到pom文件中
+
+	如果maven有jar包下载不了 寻找mirror 写入maven conf文件夹下的settings.xml中
+	在idea中项目目录中执行 mvn -U clean install
+
+Writable
+-------------------
+
+
+文件格式
+-------------------
+	1.txt
+		纯文本格式，若干行记录
+	2.
+	
+
+hadoop出现读写异常
+------------------------
+大多情况并非集群内部出现错误。先检查以下两点
+	1.是否是permission denied
+	2.datanode以及namenode的防火墙是否关闭
+
+
+
+
+
+sequenceFile
+--------------------
+	读写文件
+package com.chenjian.hadoop;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
+import org.junit.Test;
+
+public class TestSequence {
+    @Test
+    public void testWriteSeq() throws Exception {
+        Configuration configuration = new Configuration();
+        configuration.set("fs.defaultFS", "hdfs://s100:8020/");
+        FileSystem fileSystem = FileSystem.get(configuration);
+        Path path = new Path("hdfs://s100:8020/user/sequenceTest.seq");
+        Class aClass = IntWritable.class;
+        Class bClass = Text.class;
+        SequenceFile.Writer writer = SequenceFile.createWriter(fileSystem,configuration,path,aClass,bClass);
+        IntWritable key = new IntWritable();
+        Text val = new Text();
+        for (int i = 0; i < 10; ++i) {
+            key.set(i);
+            val.set("chen-" + i);
+            writer.append(key, val);
+        }
+        writer.close();
+        System.out.println("over!");
+    }
+
+    @Test
+    public void testReadSeq() throws Exception {
+        Configuration configuration = new Configuration();
+        configuration.set("fs.defaultFS", "hdfs://s100:8020/");
+        FileSystem fileSystem = FileSystem.get(configuration);
+        Path path = new Path("hdfs://s100:8020/user/sequenceTest.seq");
+
+        SequenceFile.Reader reader= new SequenceFile.Reader(fileSystem, path, configuration);
+        IntWritable key = new IntWritable();
+        Text val = new Text();
+        while (reader.next(key, val)) {
+            System.out.println(key + " : " + val);
+        }
+
+        reader.close();
+        System.out.println("over");
+    }
+}
+
+
+MapFile
+--------------
+	是排序的seqFile，具有索引
+	index(seq) + data(seq)
+	要求key按照大小顺序添加的
+	index:索引和偏移量的映射(seq),可以设置间隔值，默认是128
+		  通过配置文件io.map.index.interval设置间隔值，可以进行折半查找
+	data: key-value
+	index 1-128	129-...
+	1
+	129
+	257...
+	
+/**
+     * MapFile变种--->ArrayFile
+     * MapFile与ArrayFile编程一样（类似）
+     */
+    @Test
+    public void testWriteArrayFile() throws Exception{
+        Configuration configuration = new Configuration();
+        configuration.set("fs.defaultFS", "file:///");
+        FileSystem fs = FileSystem.get(configuration);
+
+        ArrayFile.Writer writer =
+                new ArrayFile.Writer(configuration, fs, "file:///d:/arrayFile.array",Text.class);
+
+        for (int i = 0; i < 100; ++i) {
+            writer.append(new Text("chen" + i));
+        }
+        writer.close();
+        System.out.println("over");
+
+    }
+
+
+SetFile
+--------------
+	key : WritableComparable
+	value : null
+
+序列化
+--------------
+	将对象转换成byte[]
+	JVM
+	java.io.Serializable
+
+	ObjectOutputStream/ObjectInputStream
+	byteArrayOutputStream/ByteArrayInputStream
+
+
+IPC
+--------------
+	Inter-Process Communication进程间通信
+RPC
+--------------
+	Remote procedure call 远程过程调用
+
+hadoop自己的序列化格式:Writable
+--------------------------------
+	//串行化接口
+	public interface Writable {
+		//串行过程
+		void write(DataOutput out) throws IOException;
+
+		//反串行化过程
+		void readFields(DataInput in) throws IOException;
+	}
+
+IntWritable
+----------------
+	implements WritableComparable {
+		write();
+		readFields();
+		compareTo(IntWritable o) {}
+		Comparator xx = new ... {
+			compare(byte[], byte) {
+				...
+			}
+		}
+	}
+
+

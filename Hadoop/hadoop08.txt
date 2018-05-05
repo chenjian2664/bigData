@@ -1,0 +1,110 @@
+hadoop file
+-------------
+	1.sequenceFile
+		key - value 对
+		SEQ:版本:KeyClass:ValueClass:Codec:压缩类型
+		压缩类型:NONE | Recored(Value) | Block(Record)
+		可以切割(sync点)
+		
+	2.MapFile
+		有顺序的SequenceFile 在MapFile中添加文件时 key值必须是有顺序的
+		ArrayFile	//key : index
+		SetFile		//key : value(null)
+
+java序列化
+----------------
+	ObjectOutputStream:
+
+
+hadoop 序列化
+-------------------
+	没有元数据，数据间是独立的，数据量小，传输双方都需要知道数据顺序。
+	精简
+	1.Writable
+	2.IntWritable + Text + LongWritable
+	3.DataOutputStream
+	4.Text //java.lang.String
+
+2NN:secondaryNamenode:
+-----------------------------
+	1.辅助名称节点
+	2.oiv fsimage
+	3.oev
+	4.创建检查点过程
+		a)nn上执行编辑日志滚动
+			产生新的编辑日志
+		b)2nn复制nn的image + edits
+		c)2nn进行融合
+		d)2nn将新的image发送回nn
+		e)nn重新命名新image，替换old即可
+
+	5.2nn创建检查点周期
+		a)一小时执行一次
+			dfs.namenode.checkpoint.period=3600
+		b)edit文件超过64M,触发检查点生成。
+			fs.checkpoint.size=64M
+			2nn每5分钟执行一次
+			dfs.namenode.checkpoint.txns=1000000	//操作事物数量
+			dfs.namenode.checkpoint.check.period=60
+
+
+hdfs dfsadmin
+----------------
+	[条件]
+	a.对目录进行设置
+	b.值必须是正整数
+	c.具有管理员权限
+
+	1.设置配额管理
+		[目录配额]
+			控制的目录所有文件/文件夹的个数，1表示空目录。
+			包含子文件
+			hdfs dfsadmin -setQuota 1 /user/chenjian/data	设置配额
+			hdfs dfsadmin -clrQuota /user/chenjian/data		删除配额
+
+		[空间配额]
+			副本数也计算在内，控制所有文件的总大小
+			值至少要大于384m
+			hdfs dfsadmin -help setSpaceQuota	//查看空间配额
+			hdfs dfsadmin -setSpaceQuota 500m /user/chenjian/data //设置空间配额
+			hdfs dfsadmin -clrSpaceQuota /user/chenjian/data
+
+
+	2.快照snapshot
+		相当于对目录的快速备份 并不会复制所有文件 而是创建链接指向同一个文件
+		当写入文件发生时才会产生新文件.
+		hdfs dfs -help createSnapshot	
+		//对目录进行快照之前必须允许目录进行快照 allowSnapshot
+		hdfs dfsadmin -allowSnapshot /user/chenjian/data
+		hdfs dfs -createSnapshot /user/chenjian/data	对目录进行创建快照
+		hdfs dfs -createSnapshot /user/chenjian/data xxx 创建快照并指定名字
+		hdfs dfs -renameSnapshot /user/chenjian/data 旧快照名 新快照名
+
+		
+	3.回收站
+		trash, 对应一个文件夹 
+		fs.trash.interval=.. 	//分钟数 默认0 表示禁用回收站 删除文件的存活时间
+		fs.trash.checkpoint.interval	//检查回收站间隔时间 数值小于上面数值
+		
+		启用回收站
+		core-site.xml
+		中添加fs.trash.checkpoint.interval数值
+		分发文件 立即生效
+		 
+	[4.修改hdfs的webui的静态用户 ]
+	core-site.xml中 修改hadoop.http.staticuser.user=...即可
+
+
+
+大数据
+-----------
+	1.存储
+		hdfs:hadoop distributed file system.GFS
+		分布式存储
+	2.运算
+		分布式运算
+		MapReduce	//映射 + 简化 计算模型
+
+java串行化
+----------------
+	有元数据(数据类型)写入,数据量比较大，数据间不是独立的，存在相互引用
