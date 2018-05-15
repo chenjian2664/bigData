@@ -11,7 +11,7 @@
 	ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
 	cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 	可以让本机免密码登录本机
-2.ssh-copy-id ~/.ssh/id_rsa.pub chenjian@s102
+2.ssh-copy-id -i ~/.ssh/id_rsa.pub chenjian@s102
 
 scp
 ------------
